@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./css/main-style.css">
+    <title>Something</title>
+</head>
+<body>
+<div class="task-push-form">
+    <h1>Add task</h1>
+    <div class="form-group">
+        <label>Key</label>
+        <input class="form-control" id="key" name="key" placeholder="Key">
+    </div>
+    <div class="form-group">
+        <label>Summary</label>
+        <textarea class="form-control" id="summary" name="summary" rows="3"></textarea>
+    </div>
+    <div class="form-group">
+        <label>Due to date: </label>
+        <input type="date" id="dueTo" name="dueTo" class="form-control">
+    </div>
+    <div class="form-group">
+        <label>Attach file</label>
+        <input type="file" class="form-control-file" id="file" name="file">
+    </div>
+    <button type="submit" id="create-task-btn" class="btn btn-primary">Push</button>
+</div>
+<div class="list-group my-pos">
+    <div class="head">
+        <h1 style="text-align: center">Tasks</h1>
+        <div>
+            <button type="submit" class="btn btn-primary" id="sort-btn" role="button">Sort</button>
+            <button type="submit" class="btn btn-primary" id="unsort-btn" role="button">Unsort</button>
+        </div>
+    </div>
+    <div class="task-container">
+
+    </div>
+</div>
+</body>
+<script type="text/javascript">
+    let currentData
+
+    function updateData() {
+        return fetch('/api/v1/tasks')
+            .then(response => response.json())
+            .then(json => {
+                currentData = json.data
+            })
+    }
+
+    function updateView() {
+        const taskContainer = document.querySelector('.task-container')
+        taskContainer.innerHTML = ""
+        currentData.forEach(element => {
+            taskContainer.innerHTML += produceTaskView(element)
+        })
+    }
+
+    function updateTasks() {
+        updateData()
+            .then(_ => updateView())
+            .then(_ => document
+                .querySelectorAll("#clickable-task")
+                .forEach(ct => ct.addEventListener('click', changeTaskStatus)))
+    }
+
+    function produceTaskView(element) {
+        let wipHolder = element.status === 'wip' ? 'wip' : ''
+        return `<div class="task">
+                        <a id="clickable-task" class="list-group-item list-group-item-action ${wipHolder}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h5 class="mb-1">${element.key}</h5>
+                                <small class="text-muted">${element.postDate}</small>
+                            </div>
+                            <p class="mb-1">${element.summary}</p>
+                            <a href="/download?fid="${element.fid}" class="mb-1">"${element.fileName}"</a>
+                            <small class="text-muted">due to ${element.dueTo}</small>
+                        </a>
+                    </div>`
+    }
+
+    function sendTask() {
+        const task = new FormData;
+        task.append('key', document.querySelector("#key").value)
+        task.append('summary', document.querySelector("#summary").value)
+        task.append('file', document.querySelector("#file").files[0])
+        task.append('dueTo', document.querySelector("#dueTo").value)
+
+        console.log(task)
+        fetch('api/v1/tasks', {
+            method: 'POST',
+            body: task,
+            headers: {
+                'Accept': 'application/json'
+            }
+        }).then(res => res.json)
+            .then(json => currentData.push(json))
+            .then(_ => updateTasks())
+    }
+
+    function sortedView() {
+        currentData.sort((a, b) =>
+            (a.status < b.status) ? 1 : ((b.status < a.status) ? -1 : 0))
+        updateView()
+    }
+
+    function changeTaskStatus(e) {
+        let caller = e.target.closest('a')
+        const postTime = caller
+            .getElementsByTagName('div')[0]
+            .getElementsByTagName('small')[0]
+            .innerText
+
+        fetch('api/v1/tasks', {
+            method: 'PUT',
+            body: JSON.stringify({postDate: postTime}),
+            headers: {
+                'Content-Type' : 'application/json'
+            }
+        }).then(res => {
+            if (res.status === 201) {
+                caller.classList.remove('wip')
+                currentData.find(t =>
+                    t.postDate.getVarDate === new Date(postTime).getVarDate)
+                    .status = 'done'
+            } else {
+                alert('smth goes wrong')
+            }
+        })
+    }
+
+    document.querySelector("#create-task-btn").addEventListener('click', sendTask)
+    document.querySelector("#sort-btn").addEventListener('click', sortedView)
+    document.querySelector("#unsort-btn").addEventListener('click', updateTasks)
+    updateTasks()
+</script>
+</html>
