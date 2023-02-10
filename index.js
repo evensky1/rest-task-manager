@@ -1,14 +1,21 @@
-import express from 'express'
-import path from 'path'
-import bodyParser from 'body-parser'
-import multer from 'multer'
+const express = require('express')
+const path = require('path')
+const bodyParser = require('body-parser')
+const multer = require('multer')
+const mongoose = require('mongoose')
+const authMiddleware = require('./auth/authMiddleware')
 
 const app = express()
 const port = 8085;
-const __dirname = path.resolve();
+__dirname = path.resolve();
+const authRouter = require('./auth/authRouter.js')
 app.use(express.static(path.resolve(__dirname, 'static')))
 app.use(bodyParser.urlencoded({extended: true}))
-app.use(bodyParser.json());
+app.use(bodyParser.json())
+app.use('/auth', authRouter)
+app.use(authMiddleware)
+
+mongoose.connect('mongodb://127.0.0.1:27017/task-manager-db').then(_ => console.log('Connection to mongoDB was successful'))
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -79,15 +86,15 @@ app.route('/api/v1/tasks')
             t.postDate.getVarDate === new Date(req.body.postDate).getVarDate)
             .status = 'done'
 
-        return res.status(201).send()
+        return res.sendStatus(201)
     })
 
 app.route('/api/v1/tasks/:id')
     .delete((req, res) => {
         let id = req.params['id'] - 1;
-        if (id > dataStorage.length - 1 || id < 0) return res.status(404)
+        if (id > dataStorage.length - 1 || id < 0) return res.sendStatus(404)
         delete dataStorage[id]
-        return res.status(200)
+        return res.sendStatus(200)
     })
 
 app.get('/download', (req, res) => {
