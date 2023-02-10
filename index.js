@@ -15,7 +15,7 @@ app.use(bodyParser.json())
 app.use('/auth', authRouter)
 app.use(authMiddleware)
 
-mongoose.connect('mongodb://127.0.0.1:27017/task-manager-db').then(_ => console.log('Connection to mongoDB was successful'))
+mongoose.connect(process.env.CONNECTION_URL).then(_ => console.log('Connection to mongoDB was successful'))
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
