@@ -10,6 +10,9 @@
     <title>Something</title>
 </head>
 <body>
+<div>
+    <button type="submit" class="btn btn-primary" id="exit-btn" role="button">Exit</button>
+</div>
 <div class="task-push-form">
     <h1>Add task</h1>
     <div class="form-group">
@@ -47,8 +50,22 @@
     let currentData
 
     function updateData() {
-        return fetch('/api/v1/tasks')
-            .then(response => response.json())
+        return fetch('/api/v1/tasks', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + document.cookie.split('; ')
+                    .find((row) => row.startsWith('jwt='))
+                    ?.split('=')[1]
+            }
+        })
+            .then(res => {
+                if (res.status === 401) {
+                    window.location.href = window.location.origin + '/login';
+                } else {
+                    return res.json()
+                }
+            })
             .then(json => {
                 currentData = json.data
             })
@@ -97,9 +114,18 @@
             method: 'POST',
             body: task,
             headers: {
-                'Accept': 'application/json'
+                'Accept': 'application/json',
+                'Authorization': 'Bearer ' + document.cookie.split('; ')
+                    .find((row) => row.startsWith('jwt='))
+                    ?.split('=')[1]
             }
-        }).then(res => res.json)
+        }).then(res => {
+            if (res.status === 401) {
+                window.location.replace(window.location.origin + '/auth/login');
+            } else {
+                return res.json()
+            }
+        })
             .then(json => currentData.push(json))
             .then(_ => updateTasks())
     }
@@ -121,7 +147,11 @@
             method: 'PUT',
             body: JSON.stringify({postDate: postTime}),
             headers: {
-                'Content-Type' : 'application/json'
+                'Accept': 'application/json',
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + document.cookie.split('; ')
+                    .find((row) => row.startsWith('jwt='))
+                    ?.split('=')[1]
             }
         }).then(res => {
             if (res.status === 201) {
@@ -129,12 +159,20 @@
                 currentData.find(t =>
                     t.postDate.getVarDate === new Date(postTime).getVarDate)
                     .status = 'done'
+            } else if (res.status === 401) {
+                window.location.replace(window.location.origin + '/auth/login');
             } else {
                 alert('smth goes wrong')
             }
         })
     }
 
+    function leaveSession() {
+        document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;"
+        location.reload()
+    }
+
+    document.querySelector("#exit-btn").addEventListener('click', leaveSession)
     document.querySelector("#create-task-btn").addEventListener('click', sendTask)
     document.querySelector("#sort-btn").addEventListener('click', sortedView)
     document.querySelector("#unsort-btn").addEventListener('click', updateTasks)

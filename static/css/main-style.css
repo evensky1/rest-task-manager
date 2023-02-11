@@ -37,3 +37,7 @@ body {
     align-items: center;
     justify-content: space-around;
 }
+
+.auth-form {
+    margin: 30vh auto auto;
+}
