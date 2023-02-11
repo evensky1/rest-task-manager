@@ -102,6 +102,11 @@ app.get('/download', (req, res) => {
         .download(path.resolve(__dirname, 'uploads', req.query.fid))
 })
 
+app.get('/login', (req, res) =>
+    res.sendFile(path.resolve(__dirname, 'static', 'login.html')))
+app.get('/registration', (req, res) =>
+    res.sendFile(path.resolve(__dirname, 'static', 'registration.html')))
+
 app.listen(port, () => {
     console.log('Server has been started on port ' + port)
 })

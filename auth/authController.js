@@ -14,7 +14,9 @@ class AuthController {
     }
 
     async login(req, res) {
+        console.log(req.body)
         const {username, password} = req.body
+        console.log(username + ':::' + password)
         User.findOne({username})
             .then(u => {
                 if (!u) throw new Error('User wasn\'t found')
