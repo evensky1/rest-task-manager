@@ -6,17 +6,15 @@ class AuthController {
         const {username, password} = req.body
         User.findOne({username})
             .then(u => {
-                if (u) throw new Error('\'Such user already exists\'')
+                if (u) throw new Error('Such user already exists')
                 return new User({username, password}).save()
             })
-            .then(_ => res.status(201).json("you were successfully registered"))
+            .then(_ => res.status(201).json("You were successfully registered"))
             .catch(e => res.status(400).json({message: e.message}))
     }
 
     async login(req, res) {
-        console.log(req.body)
         const {username, password} = req.body
-        console.log(username + ':::' + password)
         User.findOne({username})
             .then(u => {
                 if (!u) throw new Error('User wasn\'t found')

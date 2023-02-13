@@ -37,14 +37,9 @@
             },
             body: JSON.stringify(data)
         })
-        .then(res => {
-            if (res.status === 400) {
-                alert('400: User wasn\'t found')
-            } else {
-                return res.json()
-            }
-        })
+        .then(res => res.json())
         .then(json => {
+            if (json.message) alert('400: ' + json.message)
             document.cookie = "jwt=" + json.token
         })
         .then(_ => window.location.replace(window.location.origin + '/'))

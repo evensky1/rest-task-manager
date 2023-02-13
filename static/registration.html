@@ -41,9 +41,9 @@
                 alert('You were successfully registered')
                 window.location.replace(window.location.origin + '/login');
             } else if (res.status === 400) {
-                alert('400: ' + res.body.message)
+                return res.json()
             }
-        })
+        }).then(json => alert('400: ' + json.message))
     }
 
     document.querySelector('#register-btn').addEventListener('click', register)
