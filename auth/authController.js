@@ -2,7 +2,7 @@ const User = require('../models/User')
 const jwt = require('jsonwebtoken')
 
 class AuthController {
-    async registration(req, res) {
+    registration(req, res) {
         const {username, password} = req.body
         User.findOne({username})
             .then(u => {
@@ -13,7 +13,7 @@ class AuthController {
             .catch(e => res.status(400).json({message: e.message}))
     }
 
-    async login(req, res) {
+    login(req, res) {
         const {username, password} = req.body
         User.findOne({username})
             .then(u => {
@@ -24,10 +24,6 @@ class AuthController {
                 return res.json({token})
             })
             .catch(e => res.status(400).json({message: e.message}))
-    }
-
-    async getUsers(req, res) {
-        res.json("server is ok")
     }
 }
 

@@ -157,8 +157,7 @@
             if (res.status === 201) {
                 caller.classList.remove('wip')
                 currentData.find(t =>
-                    t.postDate.getVarDate === new Date(postTime).getVarDate)
-                    .status = 'done'
+                    t.postDate.getVarDate === new Date(postTime).getVarDate).status = 'done'
             } else if (res.status === 401) {
                 window.location.replace(window.location.origin + '/auth/login');
             } else {
